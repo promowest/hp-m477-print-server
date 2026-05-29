@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Print HP M477</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0f0f11;
+    --surface: #1a1a1f;
+    --surface2: #222228;
+    --border: #2e2e38;
+    --accent: #4f7bff;
+    --accent-glow: rgba(79,123,255,0.25);
+    --success: #34d399;
+    --error: #f87171;
+    --warning: #fbbf24;
+    --text: #e8e8f0;
+    --text-muted: #7070a0;
+    --text-dim: #404060;
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+    overflow-x: hidden;
+  }
+
+  /* Background subtle grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-top: 12px;
+  }
+
+  .printer-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, var(--surface2), var(--surface));
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 0 30px var(--accent-glow);
+  }
+
+  .printer-icon svg {
+    width: 32px;
+    height: 32px;
+    color: var(--accent);
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Status pill */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+    margin-top: 12px;
+    transition: all 0.3s;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition: all 0.3s;
+  }
+
+  .status-pill.online .status-dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
+  .status-pill.online { color: var(--success); border-color: rgba(52,211,153,0.3); }
+  .status-pill.offline .status-dot { background: var(--error); }
+  .status-pill.offline { color: var(--error); border-color: rgba(248,113,113,0.3); }
+
+  /* Upload zone */
+  .upload-zone {
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 36px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .upload-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, var(--accent-glow), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .upload-zone:hover::before,
+  .upload-zone.drag-over::before { opacity: 1; }
+  .upload-zone:hover,
+  .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(79,123,255,0.06);
+    transform: translateY(-1px);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--surface2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    transition: transform 0.2s;
+  }
+
+  .upload-zone:hover .upload-icon { transform: translateY(-3px); }
+
+  .upload-icon svg { width: 24px; height: 24px; color: var(--accent); }
+
+  .upload-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .upload-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* File preview */
+  .file-preview {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: none;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    animation: slideIn 0.2s ease;
+  }
+
+  .file-preview.visible { display: flex; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .file-type-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  .file-info { flex: 1; min-width: 0; }
+
+  .file-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .file-size {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .remove-file {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    transition: color 0.2s;
+  }
+
+  .remove-file:hover { color: var(--error); }
+
+  /* Print button */
+  .print-btn {
+    width: 100%;
+    height: 56px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(79,123,255,0.35);
+    margin-bottom: 16px;
+  }
+
+  .print-btn:hover:not(:disabled) {
+    background: #6b8eff;
+    box-shadow: 0 6px 28px rgba(79,123,255,0.5);
+    transform: translateY(-1px);
+  }
+
+  .print-btn:active:not(:disabled) { transform: translateY(0); }
+
+  .print-btn:disabled {
+    background: var(--surface2);
+    color: var(--text-dim);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .print-btn svg { width: 20px; height: 20px; }
+
+  /* Spinner inside button */
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    max-width: 340px;
+    width: calc(100% - 32px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+    opacity: 0;
+    z-index: 100;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(52,211,153,0.4); }
+  .toast.error   { border-color: rgba(248,113,113,0.4); }
+
+  .toast-icon { font-size: 18px; flex-shrink: 0; }
+  .toast-text { flex: 1; }
+
+  /* Supported formats */
+  .formats-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .formats-title {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .formats-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .format-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="printer-icon">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z"/>
+      </svg>
+    </div>
+    <h1>Print la distanță</h1>
+    <div class="subtitle">HP Color LaserJet MFP M477fdn</div>
+    <div class="status-pill" id="statusPill">
+      <span class="status-dot"></span>
+      <span id="statusText">Se verifică...</span>
+    </div>
+  </div>
+
+  <!-- Upload zone -->
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv">
+    <div class="upload-icon">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+      </svg>
+    </div>
+    <div class="upload-title">Alege fișierul</div>
+    <div class="upload-sub">PDF, Word, Excel, PowerPoint, imagini<br>Maxim 50 MB</div>
+  </div>
+
+  <!-- File preview -->
+  <div class="file-preview" id="filePreview">
+    <div class="file-type-badge" id="fileTypeBadge"></div>
+    <div class="file-info">
+      <div class="file-name" id="fileName"></div>
+      <div class="file-size" id="fileSize"></div>
+    </div>
+    <button class="remove-file" id="removeFile" title="Șterge">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Print button -->
+  <button class="print-btn" id="printBtn" disabled>
+    <svg id="printIcon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z"/>
+    </svg>
+    <div class="spinner" id="spinner"></div>
+    <span id="printBtnText">Tipărește</span>
+  </button>
+
+  <!-- Formats -->
+  <div class="formats-section">
+    <div class="formats-title">Formate acceptate</div>
+    <div class="formats-grid">
+      <span class="format-chip">PDF</span>
+      <span class="format-chip">DOCX</span>
+      <span class="format-chip">XLSX</span>
+      <span class="format-chip">PPTX</span>
+      <span class="format-chip">JPG</span>
+      <span class="format-chip">PNG</span>
+      <span class="format-chip">TXT</span>
+      <span class="format-chip">CSV</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon"></span>
+  <span class="toast-text" id="toastText"></span>
+</div>
+
+<script>
+  // ── CONFIGURARE ─────────────────────────────────────
+  // Înlocuiește cu URL-ul serviciului tău de pe Render
+  const SERVER_URL = 'https://misa-hp-m477-print-server.onrender.com';
+  // ────────────────────────────────────────────────────
+
+  const TYPE_COLORS = {
+    pdf:  { bg: '#2d1f1f', color: '#f87171', text: 'PDF' },
+    doc:  { bg: '#1f2535', color: '#60a5fa', text: 'DOC' },
+    docx: { bg: '#1f2535', color: '#60a5fa', text: 'DOCX' },
+    xls:  { bg: '#1a2e22', color: '#34d399', text: 'XLS' },
+    xlsx: { bg: '#1a2e22', color: '#34d399', text: 'XLSX' },
+    ppt:  { bg: '#2d2419', color: '#fb923c', text: 'PPT' },
+    pptx: { bg: '#2d2419', color: '#fb923c', text: 'PPTX' },
+    jpg:  { bg: '#251f2d', color: '#c084fc', text: 'JPG' },
+    jpeg: { bg: '#251f2d', color: '#c084fc', text: 'JPG' },
+    png:  { bg: '#251f2d', color: '#c084fc', text: 'PNG' },
+    txt:  { bg: '#222228', color: '#94a3b8', text: 'TXT' },
+    csv:  { bg: '#1a2e22', color: '#34d399', text: 'CSV' },
+  };
+
+  let selectedFile = null;
+
+  const fileInput    = document.getElementById('fileInput');
+  const uploadZone   = document.getElementById('uploadZone');
+  const filePreview  = document.getElementById('filePreview');
+  const fileName     = document.getElementById('fileName');
+  const fileSize     = document.getElementById('fileSize');
+  const fileTypeBadge= document.getElementById('fileTypeBadge');
+  const removeFile   = document.getElementById('removeFile');
+  const printBtn     = document.getElementById('printBtn');
+  const printIcon    = document.getElementById('printIcon');
+  const spinner      = document.getElementById('spinner');
+  const printBtnText = document.getElementById('printBtnText');
+  const statusPill   = document.getElementById('statusPill');
+  const statusText   = document.getElementById('statusText');
+
+  // Verifică statusul serverului
+  async function checkServerStatus() {
+    try {
+      const r = await fetch(SERVER_URL + '/', { signal: AbortSignal.timeout(8000) });
+      if (r.ok) {
+        statusPill.className = 'status-pill online';
+        statusText.textContent = 'Server online';
+      } else { throw new Error(); }
+    } catch {
+      statusPill.className = 'status-pill offline';
+      statusText.textContent = 'Server offline';
+    }
+  }
+
+  checkServerStatus();
+
+  // Format bytes
+  function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+    return (b/(1024*1024)).toFixed(1) + ' MB';
+  }
+
+  // Setează fișierul selectat
+  function setFile(file) {
+    selectedFile = file;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const typeInfo = TYPE_COLORS[ext] || { bg: '#222228', color: '#94a3b8', text: ext.toUpperCase().slice(0,4) };
+
+    fileTypeBadge.textContent = typeInfo.text;
+    fileTypeBadge.style.background = typeInfo.bg;
+    fileTypeBadge.style.color = typeInfo.color;
+    fileName.textContent = file.name;
+    fileSize.textContent = formatBytes(file.size);
+
+    filePreview.classList.add('visible');
+    uploadZone.style.display = 'none';
+    printBtn.disabled = false;
+  }
+
+  function clearFile() {
+    selectedFile = null;
+    fileInput.value = '';
+    filePreview.classList.remove('visible');
+    uploadZone.style.display = '';
+    printBtn.disabled = true;
+  }
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) setFile(e.target.files[0]);
+  });
+
+  removeFile.addEventListener('click', clearFile);
+
+  // Drag & drop
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+  });
+
+  // Toast
+  let toastTimer = null;
+  function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    const icon  = document.getElementById('toastIcon');
+    const text  = document.getElementById('toastText');
+    icon.textContent = type === 'success' ? '✅' : '❌';
+    text.textContent = msg;
+    toast.className = `toast ${type} show`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.className = `toast ${type}`; }, 4000);
+  }
+
+  // Print
+  printBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    // Loading state
+    printIcon.style.display = 'none';
+    spinner.style.display = 'block';
+    printBtnText.textContent = 'Se trimite...';
+    printBtn.disabled = true;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile, selectedFile.name);
+
+      const r = await fetch(SERVER_URL + '/print', {
+        method: 'POST',
+        body: formData,
+        signal: AbortSignal.timeout(90000),
+      });
+
+      const data = await r.json();
+
+      if (r.ok && data.success) {
+        showToast('Documentul a fost trimis la imprimantă!', 'success');
+        clearFile();
+      } else {
+        showToast(data.error || 'Eroare la tipărire', 'error');
+      }
+    } catch (err) {
+      if (err.name === 'TimeoutError') {
+        showToast('Timeout — imprimanta nu răspunde', 'error');
+      } else {
+        showToast('Eroare de rețea: ' + err.message, 'error');
+      }
+    } finally {
+      printIcon.style.display = '';
+      spinner.style.display = 'none';
+      printBtnText.textContent = 'Tipărește';
+      if (selectedFile) printBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
